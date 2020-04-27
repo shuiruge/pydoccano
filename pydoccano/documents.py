@@ -10,10 +10,10 @@ class Documents(BaseAPI):
         self.base_endpoint = f"{self.project.base_endpoint}/docs"
 
     def __getitem__(self, i):
-        return Document(self.project, i)
+        return Document(self.project, i + 1)
 
     def __delitem__(self, i):
-        return self._delete(f"{self.base_endpoint}/{i}")
+        return self._delete(f"{self.base_endpoint}/{i + 1}")
 
     def __len__(self):
         return self.details['count']
