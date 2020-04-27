@@ -1,24 +1,36 @@
-from requests import Session
-
-from .base_api import BaseApi
+from .base_api import BaseAPI
 
 
-class Annotations(BaseApi):
-    def __init__(self, base_url: str, session: Session, version='v1'):
-        super().__init__(base_url)
-        self.session = session
-        self.version = version
-        self.base_endpoint = f"{self.version}/projects"
+class Annotations(BaseAPI):
 
-    def list(self, project_id, doc_id):
-        return self._get(
-            endpoint=f"{self.base_endpoint}/{project_id}/docs/{doc_id}/annotations"
-        )
+    def __init__(self, document):
+        super().__init__(document.session, document.address, document.version)
+        self.document = document
+        self.base_endpoint = f"{self.document.base_endpoint}/annotations"
 
-    def details(self, project_id, doc_id, annotation_id):
-        return self._get(
-            endpoint=f"{self.base_endpoint}/{project_id}/docs/{doc_id}/annotations/{annotation_id}"
-        )
+    def __getitem__(self, i):
+        return Annotation(self.document, i)
 
-    def statistics(self, project_id):
-        return self._get(endpoint=f"{self.base_endpoint}/{project_id}/statistics")
+    def __delitem__(self, i):
+        return self._delete(f"{self.base_endpoint}/{i}")
+
+    def __len__(self):
+        return len(self.details)
+
+    @property
+    def details(self):
+        return self._get(self.base_endpoint)
+
+
+class Annotation(BaseAPI):
+
+    def __init__(self, document, id: int):
+        super().__init__(document.session, document.address, document.version)
+        self.document = document
+        self.id = id
+        self.base_endpoint = (
+            f"{self.document.base_endpoint}/annotations/{self.id}")
+
+    @property
+    def details(self):
+        return self._get(self.base_endpoint)

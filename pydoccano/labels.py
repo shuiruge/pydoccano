@@ -1,23 +1,30 @@
-from requests import Session
-
-from .base_api import BaseApi
+from .base_api import BaseAPI
 
 
-class Labels(BaseApi):
-    def __init__(self, base_url: str, session: Session, version='v1'):
-        super().__init__(base_url)
-        self.session = session
-        self.version = version
-        self.base_endpoint = f"{self.version}/projects"
+class Labels(BaseAPI):
 
-    def list(self, project_id):
-        return self._get(endpoint=f"{self.base_endpoint}/{project_id}/labels")
+    def __init__(self, project):
+        super().__init__(project.session, project.address, project.version)
+        self.project = project
 
-    def details(self, project_id, label_id):
-        return self._get(endpoint=f"{self.base_endpoint}/{project_id}/labels/{label_id}")
+        self.base_endpoint = f"{self.project.base_endpoint}/labels"
 
-    def post_approve_labels(self, project_id, doc_id):
-        return self._post(
-            f"{self.base_endpoint}/{project_id}/docs/{doc_id}/approve-labels"
-        )
+    def __getitem__(self, i):
+        return Label(self, i)
 
+    def __delitem__(self, i):
+        return self._delete(f"{self.base_endpoint}/{i}")
+
+
+class Label(BaseAPI):
+
+    def __init__(self, project, id: int):
+        super().__init__(project.session, project.address, project.version)
+        self.project = project
+        self.id = id
+
+        self.base_endpoint = f"{self.project.base_endpoint}/labels/{id}"
+
+    @property
+    def details(self):
+        return self._get(self.base_endpoint)

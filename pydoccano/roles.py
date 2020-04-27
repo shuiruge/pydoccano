@@ -1,21 +1,28 @@
-from requests import Session
-
-from .base_api import BaseApi
+from .base_api import BaseAPI
 
 
-class Roles(BaseApi):
-    def __init__(self, base_url: str, session: Session, version='v1'):
-        super().__init__(base_url)
-        self.session = session
-        self.version = version
-        self.base_endpoint = f"{self.version}/projects"
+class Roles(BaseAPI):
 
-    def list(self, project_id):
-        return self._get(
-            f"{self.base_endpoint}/{project_id}/roles"
-        )
+    def __init__(self, project):
+        super().__init__(project.session, project.address, project.version)
+        self.project = project
+        self.base_endpoint = f"{self.project.base_endpoint}/roles"
 
-    def details(self, project_id, rolemapping_id):
-        return self._get(
-            endpoint=f"{self.base_endpoint}/{project_id}/roles/{rolemapping_id}"
-        )
+    def __getitem__(self, i):
+        return Role(self, i)
+
+    def __delitem__(self, i):
+        return self._delete(f"{self.base_endpoint}/{i}")
+
+
+class Role(BaseAPI):
+
+    def __init__(self, project, id: int):
+        super().__init__(project.session, project.address, project.version)
+        self.project = project
+        id = id
+        self.base_endpoint = f"{self.project.base_endpoint}/roles/{id}"
+
+    @property
+    def details(self):
+        return self._get(self.base_endpoint)

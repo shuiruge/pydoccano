@@ -1,14 +1,35 @@
-from requests import Session
-
-from .base_api import BaseApi
+from pydoccano.base_api import BaseAPI
 
 
-class Users(BaseApi):
-    def __init__(self, base_url: str, session: Session, version='v1'):
-        super().__init__(base_url)
-        self.session = session
-        self.version = version
-        self.base_endpoint = f"{self.version}/users"
+class Users(BaseAPI):
 
-    def list(self):
-        return self._get(endpoint=self.base_endpoint)
+    def __init__(self, doccano):
+        super().__init__(doccano.session, doccano.address, doccano.version)
+        self.doccano = doccano
+        self.base_endpoint = "users"
+
+    def __getitem__(self, i):
+        return User(self, i)
+
+    def __delitem__(self, i):
+        return self._delete(f"{self.base_endpoint}/{i}")
+
+    def __len__(self):
+        return len(self.details)
+
+    @property
+    def details(self):
+        return self._get(self.base_endpoint)
+
+
+class User(BaseAPI):
+
+    def __init__(self, doccano, id: int):
+        super().__init__(doccano.session, doccano.address, doccano.version)
+        self.doccano = doccano
+        self.id = id
+        self.base_endpoint = f"users/{self.id}"
+
+    @property
+    def details(self):
+        return self._get(self.base_endpoint)

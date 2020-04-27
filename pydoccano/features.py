@@ -1,14 +1,12 @@
-from requests import Session
-
-from .base_api import BaseApi
+from .base_api import BaseAPI
 
 
-class Features(BaseApi):
-    def __init__(self, base_url: str, session: Session, version='v1'):
-        super().__init__(base_url)
-        self.session = session
-        self.version = version
-        self.base_endpoint = f"{self.version}/features"
+class Features(BaseAPI):
 
-    def get(self):
-        return self._get(endpoint=self.base_endpoint)
+    def __init__(self, doccano):
+        super().__init__(doccano.session, doccano.address, doccano.version)
+        self.base_endpoint = "features"
+
+    @property
+    def details(self):
+        return self._get(self.base_endpoint)
