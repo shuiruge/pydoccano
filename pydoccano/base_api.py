@@ -1,10 +1,13 @@
 import json
-from typing import Union
+from typing import Union, Iterator
 from requests import Session, HTTPError
 
 
 class APINotFoundError(Exception):
     pass
+
+
+ID = int
 
 
 class BaseAPI:
@@ -69,13 +72,13 @@ class APICollection(API):
     def __init__(self, base_api: BaseAPI):
         super().__init__(base_api)
 
-    def _get_element_by_id(self, id: int) -> API:
+    def _get_element_by_id(self, id: ID) -> API:
         return NotImplemented
 
     def __len__(self):
         return NotImplemented
 
-    def __getitem__(self, id: int) -> API:
+    def __getitem__(self, id: ID) -> API:
         item = self._get_element_by_id(id)
         if item.details is None:
             raise KeyError
@@ -89,10 +92,10 @@ class APICollection(API):
             raise KeyError
         self._put(f"{self._base_endpoint}/{id}", json=value)
 
-    def __delitem__(self, id: int):
+    def __delitem__(self, id: ID):
         self._delete(f"{self._base_endpoint}/{id}")
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[ID]:
         return self._get_id_generator()
 
     def _get_id_generator(self):
