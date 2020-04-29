@@ -19,12 +19,10 @@ class Documents(APICollection):
         return self.details['count']
 
     def __setitem__(self, id, value):
+        """Doccano restful api will not update the annotations.
+        So, this assignment only changes the "text"'s value.
+        """
         super().__setitem__(id, value)
-        item = self[id]
-        if isinstance(value, Document):
-            for ann in Document.annotations:
-                item.annotate(ann)
-
 
 class Document(API):
 
@@ -40,6 +38,3 @@ class Document(API):
     @property
     def annotations(self):
         return Annotations(self)
-
-    def annotate(self, annotation: dict):
-        self.annotations.append(annotation)

@@ -8,7 +8,7 @@ class Projects(APICollection):
 
     def __init__(self, doccano):
         super().__init__(doccano)
-        self.docanno = doccano
+        self.doccano = doccano
 
     @property
     def _base_endpoint(self):
@@ -20,12 +20,23 @@ class Projects(APICollection):
     def __len__(self):
         return len(self.details)
 
+    def add(self, value):
+        if isinstance(value, dict):
+            name = value['name']
+            project_type = value['project_type']
+            description = value.get('description', 'No description.')
+            guideline = value.get('guideline', 'No guideline.')
+            return _create_project(
+                self, name, project_type, description, guideline)
+        else:
+            return super().add(value)
+
 
 class Project(API):
 
     def __init__(self, doccano, id: int):
         super().__init__(doccano)
-        self.docanno = doccano
+        self.doccano = doccano
         self.id = id
 
     @property
@@ -45,17 +56,35 @@ class Project(API):
         return Labels(self)
 
 
-def create_project(doccano, name: str, project_type: str,
-                   description='', guidline=''):
-    url = f"{doccano._base_endpoint}/projects"
-    mapping = {'SequenceLabeling': 'SequenceLabelingProject',
-                'DocumentClassification': 'TextClassificationProject',
-                'Seq2seq': 'Seq2seqProject'}
+class ProjectType:
+    pass
+
+
+class SequenceLabeling(ProjectType):
+    pass
+
+
+class DocumentClassification(ProjectType):
+    pass
+
+
+class Seq2seq(ProjectType):
+    pass
+
+
+def _create_project(projects: Projects, name: str, project_type: ProjectType,
+                    description: str, guideline: str):
+    mapping = {
+        'SequenceLabeling': 'SequenceLabelingProject',
+        'DocumentClassification': 'TextClassificationProject',
+        'Seq2seq': 'Seq2seqProject',
+    }
+    project_type = project_type.__name__
     data = {
         'name': name,
         'project_type': project_type,
         'description': description,
         'guideline': guideline,
-        'resourcetype': mapping[project_type]
+        'resourcetype': mapping[project_type],
     }
-    return api._post(url, json=data)
+    projects._post(projects._base_endpoint, json=data)

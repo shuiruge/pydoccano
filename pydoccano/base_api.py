@@ -79,15 +79,30 @@ class APICollection(API):
         return NotImplemented
 
     def __getitem__(self, id: ID) -> API:
+        """Raises KeyError if the ID is absent in the remote."""
         item = self._get_element_by_id(id)
-        if item.details is None:
+
+        # ensure that the API exists in remote
+        try:
+            item.details
+        except APINotFoundError:
             raise KeyError
+
         return item
+
+    def __contains__(self, id: ID) -> bool:
+        try:
+            self[id]
+        except KeyError:
+            return False
+        else:
+            return True
 
     def __setitem__(self, id, value: Union[dict, API]):
         if isinstance(value, API):
             value = value.details.copy()
-        del value['id']
+        if 'id' in value:
+            del value['id']
         if id not in self:
             raise KeyError
         self._put(f"{self._base_endpoint}/{id}", json=value)
@@ -103,14 +118,17 @@ class APICollection(API):
         n = 0
         while n < len(self):
             try:
-                n += 1
-                yield id
+                _ = self[id]
             except KeyError:
                 pass
+            else:
+                n += 1
+                yield id
             id += 1
 
     def add(self, value: Union[dict, API]):
         if isinstance(value, API):
             value = value.details.copy()
-        del value['id']
+        if id in value:
+            del value['id']
         self._post(self._base_endpoint, json=value)
