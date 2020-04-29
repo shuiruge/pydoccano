@@ -1,37 +1,30 @@
-from .base_api import BaseAPI
+from .base_api import API, APICollection
 
 
-class Labels(BaseAPI):
+class Labels(APICollection):
 
     def __init__(self, project):
-        super().__init__(project.session, project.address, project.version)
+        super().__init__(project)
         self.project = project
 
-        self.base_endpoint = f"{self.project.base_endpoint}/labels"
+    @property
+    def _base_endpoint(self):
+        return f"{self.project._base_endpoint}/labels"
 
-    def __getitem__(self, i):
-        return Label(self, i + 1)
-
-    def __delitem__(self, i):
-        return self._delete(f"{self.base_endpoint}/{i + 1}")
+    def _get_element_by_id(self, id):
+        return Label(self, id)
 
     def __len__(self):
-        return max([_['id'] for _ in self.details])
-
-    @property
-    def details(self):
-        return self._get(self.base_endpoint)
+        return len(self.details)
 
 
-class Label(BaseAPI):
+class Label(API):
 
     def __init__(self, project, id: int):
-        super().__init__(project.session, project.address, project.version)
+        super().__init__(project)
         self.project = project
         self.id = id
 
-        self.base_endpoint = f"{self.project.base_endpoint}/labels/{id}"
-
     @property
-    def details(self):
-        return self._get(self.base_endpoint)
+    def _base_endpoint(self):
+        return f"{self.project._base_endpoint}/labels/{self.id}"

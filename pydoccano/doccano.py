@@ -35,7 +35,7 @@ class Doccano(BaseAPI):
         }
         response_json = self._post(endpoint='auth-token', data=auth)
         token = response_json['token']
-        self.session.headers.update(
+        self._session.headers.update(
             {
                 'Authorization': f"Token {token}",
                 'Accept': 'application/json'

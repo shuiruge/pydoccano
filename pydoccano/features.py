@@ -1,12 +1,12 @@
-from .base_api import BaseAPI
+from .base_api import API
 
 
-class Features(BaseAPI):
+class Features(API):
 
     def __init__(self, doccano):
-        super().__init__(doccano.session, doccano.address, doccano.version)
-        self.base_endpoint = "features"
+        super().__init__(doccano)
+        self.doccano = doccano
 
     @property
-    def details(self):
-        return self._get(self.base_endpoint)
+    def _base_endpoint(self):
+        return "features"

@@ -1,34 +1,30 @@
-from .base_api import BaseAPI
+from .base_api import API, APICollection
 
 
-class Roles(BaseAPI):
+class Roles(APICollection):
 
     def __init__(self, project):
-        super().__init__(project.session, project.address, project.version)
+        super().__init__(project)
         self.project = project
-        self.base_endpoint = f"{self.project.base_endpoint}/roles"
 
-    def __getitem__(self, i):
-        return Role(self, i + 1)
+    @property
+    def _base_endpoint(self):
+        return f"{self.project._base_endpoint}/roles"
 
-    def __delitem__(self, i):
-        return self._delete(f"{self.base_endpoint}/{i + 1}")
+    def _get_element_by_id(self, id):
+        return Role(self, id)
 
     def __len__(self):
-        return max([_['id'] for _ in self.details])
+        return len(self.details)
 
-    @property
-    def details(self):
-        return self._get(self.base_endpoint)
 
-class Role(BaseAPI):
+class Role(API):
 
     def __init__(self, project, id: int):
-        super().__init__(project.session, project.address, project.version)
+        super().__init__(project)
         self.project = project
         id = id
-        self.base_endpoint = f"{self.project.base_endpoint}/roles/{id}"
 
     @property
-    def details(self):
-        return self._get(self.base_endpoint)
+    def _base_endpoint(self):
+        return f"{self.project._base_endpoint}/roles/{self.id}"

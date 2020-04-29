@@ -1,48 +1,45 @@
-from pydoccano.base_api import BaseAPI
+from pydoccano.base_api import API, APICollection
 from pydoccano.annotations import Annotations
 
 
-class Documents(BaseAPI):
+class Documents(APICollection):
 
     def __init__(self, project):
-        super().__init__(project.session, project.address, project.version)
+        super().__init__(project)
         self.project = project
-        self.base_endpoint = f"{self.project.base_endpoint}/docs"
 
-    def __getitem__(self, i):
-        return Document(self.project, i + 1)
+    @property
+    def _base_endpoint(self):
+        return f"{self.project._base_endpoint}/docs"
 
-    def __delitem__(self, i):
-        return self._delete(f"{self.base_endpoint}/{i + 1}")
+    def _get_element_by_id(self, id):
+        return Document(self.project, id)
 
     def __len__(self):
         return self.details['count']
 
-    @property
-    def details(self):
-        return self._get(self.base_endpoint)
+    def __setitem__(self, id, value):
+        super().__setitem__(id, value)
+        item = self[id]
+        if isinstance(value, Document):
+            for ann in Document.annotations:
+                item.annotate(ann)
 
 
-class Document(BaseAPI):
+class Document(API):
 
     def __init__(self, project, id: int):
-        super().__init__(project.session, project.address, project.version)
+        super().__init__(project)
         self.project = project
         self.id = id
-        self.base_endpoint = f"{self.project.base_endpoint}/docs/{id}"
 
     @property
-    def details(self):
-        return self._get(self.base_endpoint)
+    def _base_endpoint(self):
+        return f"{self.project._base_endpoint}/docs/{self.id}"
 
     @property
     def annotations(self):
         return Annotations(self)
 
-
-def create_document(project, text: str, annotations: [dict] = None):
-    if annotations is None:
-        annotations = []
-    url = f"projects/{self.project.id}/docs"
-    data = {'text': text, 'annotations': annotations}
-    return project._post(url, json=data)
+    def annotate(self, annotation: dict):
+        self.annotations.append(annotation)

@@ -1,36 +1,28 @@
-from .base_api import BaseAPI
+from .base_api import API
 
 
-class Annotations(BaseAPI):
+class Annotations(API):
 
     def __init__(self, document):
-        super().__init__(document.session, document.address, document.version)
+        super().__init__(document)
         self.document = document
-        self.base_endpoint = f"{self.document.base_endpoint}/annotations"
 
-    def __getitem__(self, i):
-        return Annotation(self.document, i + 1)
+    @property
+    def _base_endpoint(self):
+        return f"{self.document._base_endpoint}/annotations"
 
-    def __delitem__(self, i):
-        return self._delete(f"{self.base_endpoint}/{i + 1}")
+    def __iter__(self):
+        return iter(self.details)
+
+    def __getitem__(self, position):
+        return self.details[position]
 
     def __len__(self):
-        return max([_['id'] for _ in self.details])
+        return len(self.details)
 
-    @property
-    def details(self):
-        return self._get(self.base_endpoint)
-
-
-class Annotation(BaseAPI):
-
-    def __init__(self, document, id: int):
-        super().__init__(document.session, document.address, document.version)
-        self.document = document
-        self.id = id
-        self.base_endpoint = (
-            f"{self.document.base_endpoint}/annotations/{self.id}")
-
-    @property
-    def details(self):
-        return self._get(self.base_endpoint)
+    def append(self, annotation: dict):
+        annotation = annotation.copy()
+        del annotation['id']
+        del annotation['user']
+        del annotation['document']
+        self._post(self._base_endpoint, json=annotation)
