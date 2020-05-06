@@ -84,14 +84,6 @@ class APICollection(API):
             raise KeyError
         return item
 
-    def __setitem__(self, id, value: Union[dict, API]):
-        if isinstance(value, API):
-            value = value.details.copy()
-        del value['id']
-        if id not in self:
-            raise KeyError
-        self._put(f"{self._base_endpoint}/{id}", json=value)
-
     def __delitem__(self, id: ID):
         self._delete(f"{self._base_endpoint}/{id}")
 

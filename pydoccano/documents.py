@@ -18,13 +18,6 @@ class Documents(APICollection):
     def __len__(self):
         return self.details['count']
 
-    def __setitem__(self, id, value):
-        super().__setitem__(id, value)
-        item = self[id]
-        if isinstance(value, Document):
-            for ann in Document.annotations:
-                item.annotate(ann)
-
 
 class Document(API):
 
@@ -40,6 +33,3 @@ class Document(API):
     @property
     def annotations(self):
         return Annotations(self)
-
-    def annotate(self, annotation: dict):
-        self.annotations.append(annotation)
